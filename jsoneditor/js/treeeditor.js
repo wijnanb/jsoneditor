@@ -495,6 +495,8 @@ TreeEditor.prototype._createFrame = function () {
         event = event || window.event;
         var target = event.target || event.srcElement;
 
+        event.node = Node.getNodeFromTarget(target);
+
         onEvent(event);
 
         // prevent default submit action of buttons when TreeEditor is located
