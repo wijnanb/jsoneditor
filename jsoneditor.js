@@ -28,7 +28,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 2.3.0-SNAPSHOT
- * @date    2013-05-28
+ * @date    2013-07-24
  */
 (function () {
 
@@ -736,6 +736,9 @@ TreeEditor.prototype._createFrame = function () {
         event = event || window.event;
         var target = event.target || event.srcElement;
 
+        event.node = Node.getNodeFromTarget(target);
+        console.log("event.node: ", event.node);
+
         onEvent(event);
 
         // prevent default submit action of buttons when TreeEditor is located
@@ -1347,6 +1350,87 @@ function Node (editor, params) {
         this.setValue(null);
     }
 };
+
+
+
+Node.prototype.getData = function() {
+    var field = this.getField();
+    var value = this.getValue();
+    var level = this.getLevel();
+    var type = this._getType(value);
+    var path = this.getPath();
+
+    if (type == 'array') {
+        return {
+            collection: field,
+            items: value,
+            path: path
+        }
+    }
+
+    return {
+        field: field,
+        value: value,
+        level: level,
+        type: type,
+        path: path
+    }
+}
+
+Node.prototype.getPath = function() {
+    function levelsToPath(levels) {
+        var level;
+        var path = "";
+
+        levels.reverse();
+
+        for (i in levels) {
+            level = levels[i];
+
+            if (typeof level === 'number') {
+                path += "["+level+"]"
+            } else {
+                if (i>0) {
+                    path += "."+level;
+                } else {
+                    path += level;
+                }
+            }
+        }
+
+        return path;
+    }
+
+    var paths = []
+    var levels = [];
+    var node = this;
+
+    while (node && node.parent) {
+        if (node.parent.type == 'array') {
+
+            if (levels.length > 0) {
+                // save a copy of this path
+                var copy = levels.slice(0);
+                paths.push( levelsToPath(copy) )
+            }
+            levels.push(node.index);
+        } else {
+            levels.push(node.field);
+        }
+
+        node = node.parent;
+    }
+
+    paths.push( levelsToPath(levels));
+
+    console.log("paths: ", paths.join(", "));
+
+    return paths;
+}
+
+
+
+
 
 /**
  * Set parent node

@@ -97,8 +97,6 @@ Node.prototype.getPath = function() {
 
     paths.push( levelsToPath(levels));
 
-    console.log("paths: ", paths.join(", "));
-
     return paths;
 }
 
