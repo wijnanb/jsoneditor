@@ -83,6 +83,21 @@ Node.prototype.getPathsAndCollections = function() {
     var node = this;
     var collections = [];
 
+    // root element
+    if (node && !node.parent) {
+        var collections = [];
+
+        if (node.type == 'array') {
+            collections = [''];
+        }
+
+        return {
+            paths: [''],
+            collections: collections
+        };
+    }
+
+
     while (node && node.parent) {
         if (node.parent.type == 'array') {
 
@@ -92,7 +107,7 @@ Node.prototype.getPathsAndCollections = function() {
                 paths.push( levelsToPath(copy) )
             }
             levels.push(node.index);
-            collections.push(node.parent.field);
+            collections.push(node.parent.field || "");
         } else {
             levels.push(node.field);
         }
