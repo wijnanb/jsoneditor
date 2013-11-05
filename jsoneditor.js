@@ -28,7 +28,7 @@
  *
  * @author  Jos de Jong, <wjosdejong@gmail.com>
  * @version 2.3.0-SNAPSHOT
- * @date    2013-07-24
+ * @date    2013-11-05
  */
 (function () {
 
@@ -737,7 +737,6 @@ TreeEditor.prototype._createFrame = function () {
         var target = event.target || event.srcElement;
 
         event.node = Node.getNodeFromTarget(target);
-        console.log("event.node: ", event.node);
 
         onEvent(event);
 
@@ -1358,13 +1357,15 @@ Node.prototype.getData = function() {
     var value = this.getValue();
     var level = this.getLevel();
     var type = this._getType(value);
-    var path = this.getPath();
+    var pathsAndCollections = this.getPathsAndCollections();
+    var paths = pathsAndCollections.paths;
+    var collections = pathsAndCollections.collections;
 
     if (type == 'array') {
         return {
             collection: field,
             items: value,
-            path: path
+            paths: paths
         }
     }
 
@@ -1373,11 +1374,12 @@ Node.prototype.getData = function() {
         value: value,
         level: level,
         type: type,
-        path: path
+        paths: paths,
+        collections: collections
     }
 }
 
-Node.prototype.getPath = function() {
+Node.prototype.getPathsAndCollections = function() {
     function levelsToPath(levels) {
         var level;
         var path = "";
@@ -1404,6 +1406,22 @@ Node.prototype.getPath = function() {
     var paths = []
     var levels = [];
     var node = this;
+    var collections = [];
+
+    // root element
+    if (node && !node.parent) {
+        var collections = [];
+
+        if (node.type == 'array') {
+            collections = [''];
+        }
+
+        return {
+            paths: [''],
+            collections: collections
+        };
+    }
+
 
     while (node && node.parent) {
         if (node.parent.type == 'array') {
@@ -1414,6 +1432,7 @@ Node.prototype.getPath = function() {
                 paths.push( levelsToPath(copy) )
             }
             levels.push(node.index);
+            collections.push(node.parent.field || "");
         } else {
             levels.push(node.field);
         }
@@ -1421,13 +1440,13 @@ Node.prototype.getPath = function() {
         node = node.parent;
     }
 
-    paths.push( levelsToPath(levels));
+    paths.push( levelsToPath(levels) );
 
-    console.log("paths: ", paths.join(", "));
-
-    return paths;
+    return {
+        paths: paths,
+        collections: collections
+    };
 }
-
 
 
 
